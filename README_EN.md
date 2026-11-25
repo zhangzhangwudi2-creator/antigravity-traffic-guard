@@ -27,7 +27,7 @@ flowchart LR
   B -- "Video >512KB / Image >1.5MB" --> D["ffmpeg -> <250KB<br/>3x2 Contact Sheet"]
   D -- "OK" --> E["overwrite Path<br/>(-97% payload)"]
   D -- "Corrupt / No ffmpeg" --> F["deny (never leak raw file)"]
-  B -- "Audio >300KB" --> G["deny & suggest<br/>1-turn subagent"]
+  B -- "Audio >300KB" --> G["deny & advise local script<br/>or temporary toggle-off"]
 ```
 
 ---
@@ -63,7 +63,7 @@ See [clash-verge-templates/README.md](./clash-verge-templates/README.md) (explai
 * **Optional env vars**: `MTG_VIDEO_KB` (`512`), `MTG_AUDIO_KB` (`300`), `MTG_IMAGE_KB` (`1536`), `MTG_WARN_MB` (`15`), `FFMPEG_PATH`.
 
 ## Companion Open-Source Monitor
-* [severin-ye/mihomo-traffic-ledger](https://github.com/severin-ye/mihomo-traffic-ledger) — Local-first Windows per-process SQLite traffic ledger for Clash Verge Rev / Mihomo.
+* [severin-ye/mihomo-traffic-ledger](https://github.com/severin-ye/mihomo-traffic-ledger) — Local-first Windows per-process SQLite traffic ledger for Clash Verge Rev / Mihomo. (Note: `v1.1.0` release is best used on-demand and exited from the tray afterward rather than left running 24/7, until a release ships pipe-reuse fix `62e8e87`.)
 
 ## Run Tests
 ```bash

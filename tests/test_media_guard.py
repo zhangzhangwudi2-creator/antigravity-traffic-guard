@@ -15,7 +15,9 @@ def run_guard(mode, payload):
     ms = (time.perf_counter() - t0) * 1000.0
     if r.returncode != 0:
         raise AssertionError(f"media_guard exited {r.returncode}: {r.stderr}")
-    return json.loads(r.stdout), ms
+    raw = r.stdout
+    parsed = json.loads(raw) if raw.strip() else None
+    return raw, parsed, ms
 
 
 class TestMediaTrafficGuard(unittest.TestCase):
@@ -29,12 +31,23 @@ class TestMediaTrafficGuard(unittest.TestCase):
         shutil.rmtree(self.tmp, ignore_errors=True)
 
     def test_normal_code_passthrough(self):
-        out, ms = run_guard("pretool", {
+        raw, parsed, ms = run_guard("pretool", {
             "toolCall": {"name": "read_file", "args": {"Path": str(SCRIPT)}},
             "artifactDirectoryPath": str(self.art),
         })
-        self.assertEqual(out, {})
+        self.assertEqual(raw, "")
+        self.assertIsNone(parsed)
         self.assertLess(ms, 1000.0)
+
+    def test_relative_path_resolved_via_cwd(self):
+        wav = self.tmp / "rel_audio.wav"
+        wav.write_bytes(b"RIFF" + b"\x00" * (400 * 1024))
+        _, out, _ = run_guard("pretool", {
+            "toolCall": {"name": "read_file", "args": {"Path": "rel_audio.wav"}},
+            "cwd": str(self.tmp),
+            "artifactDirectoryPath": str(self.art),
+        })
+        self.assertEqual(out.get("decision"), "deny")
 
     def test_real_video_contact_sheet(self):
         if not self.ffmpeg:
@@ -48,7 +61,7 @@ class TestMediaTrafficGuard(unittest.TestCase):
         ], check=True, timeout=20)
         self.assertGreater(vid.stat().st_size, 512 * 1024)
 
-        out, _ = run_guard("pretool", {
+        _, out, _ = run_guard("pretool", {
             "toolCall": {"name": "read_file", "args": {"Path": str(vid)}},
             "artifactDirectoryPath": str(self.art),
         })
@@ -61,7 +74,7 @@ class TestMediaTrafficGuard(unittest.TestCase):
     def test_corrupt_video_denied(self):
         bad = self.tmp / "corrupt.mp4"
         bad.write_bytes(b"\x00\xFF\x12\x34" * (160 * 1024))
-        out, _ = run_guard("pretool", {
+        _, out, _ = run_guard("pretool", {
             "toolCall": {"name": "read_file", "args": {"Path": str(bad)}},
             "artifactDirectoryPath": str(self.art),
         })
@@ -70,7 +83,7 @@ class TestMediaTrafficGuard(unittest.TestCase):
     def test_large_audio_denied(self):
         wav = self.tmp / "big.wav"
         wav.write_bytes(b"RIFF" + b"\x00" * (400 * 1024))
-        out, _ = run_guard("pretool", {
+        _, out, _ = run_guard("pretool", {
             "toolCall": {"name": "read_file", "args": {"Path": str(wav)}},
             "artifactDirectoryPath": str(self.art),
         })
@@ -87,7 +100,7 @@ class TestMediaTrafficGuard(unittest.TestCase):
         ], check=True, timeout=20)
         self.assertGreater(img.stat().st_size, 1536 * 1024)
 
-        out, _ = run_guard("pretool", {
+        _, out, _ = run_guard("pretool", {
             "toolCall": {"name": "read_file", "args": {"Path": str(img)}},
             "artifactDirectoryPath": str(self.art),
         })
@@ -102,14 +115,14 @@ class TestMediaTrafficGuard(unittest.TestCase):
         if flag.exists():
             flag.unlink()
         try:
-            out_empty, _ = run_guard("preinvoke", {"conversationId": cid, "artifactDirectoryPath": str(self.art)})
-            self.assertEqual(out_empty, {})
+            _, out_empty, _ = run_guard("preinvoke", {"conversationId": cid, "artifactDirectoryPath": str(self.art)})
+            self.assertEqual(out_empty.get("injectSteps"), [])
 
             media_dir = self.art / ".system_generated" / "logs" / "media"
             media_dir.mkdir(parents=True, exist_ok=True)
             (media_dir / "big.bin").write_bytes(b"\x01" * (16 * 1024 * 1024))
-            out_warn, _ = run_guard("preinvoke", {"conversationId": cid, "artifactDirectoryPath": str(self.art)})
-            self.assertIn("injectSteps", out_warn)
+            _, out_warn, _ = run_guard("preinvoke", {"conversationId": cid, "artifactDirectoryPath": str(self.art)})
+            self.assertTrue(len(out_warn.get("injectSteps") or []) == 1)
         finally:
             if flag.exists():
                 flag.unlink()

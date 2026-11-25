@@ -28,7 +28,7 @@ flowchart LR
   B -- "视频 >512KB / 大图 >1.5MB" --> D["ffmpeg 转 <250KB<br/>6格关键帧拼图"]
   D -- "成功" --> E["overwrite 替换路径放行<br/>体积直降 97%+"]
   D -- "损坏/缺 ffmpeg" --> F["deny 拦截防漏原片"]
-  B -- "大音频 >300KB" --> G["deny 并提示走<br/>一次性子代理"]
+  B -- "大音频 >300KB" --> G["deny 提示改用本地脚本<br/>或按需临时关闭插件"]
 ```
 
 ---
@@ -66,7 +66,7 @@ chmod +x install.sh && ./install.sh
 * **可调阈值环境变量**：`MTG_VIDEO_KB`（默认 `512`）、`MTG_AUDIO_KB`（默认 `300`）、`MTG_IMAGE_KB`（默认 `1536`）、`MTG_WARN_MB`（默认 `15`）、`FFMPEG_PATH`。
 
 ## 推荐搭配的开源监控工具
-* [severin-ye/mihomo-traffic-ledger](https://github.com/severin-ye/mihomo-traffic-ledger) — Windows 端 Clash Verge Rev 本地 SQLite 进程级流量账本，随时看清每个进程走了哪条节点。
+* [severin-ye/mihomo-traffic-ledger](https://github.com/severin-ye/mihomo-traffic-ledger) — Windows 端 Clash Verge Rev 本地 SQLite 进程级流量账本，随时看清每个进程走了哪条节点。（注：`v1.1.0` 发布版建议按需打开查账、查完退出托盘，暂不建议 24 小时常驻后台，直至包含命名管道复用修复 `62e8e87` 的新版本发布。）
 
 ## 本地运行测试
 ```bash
