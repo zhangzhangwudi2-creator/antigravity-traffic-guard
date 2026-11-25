@@ -1,0 +1,27 @@
+{
+  "media-traffic-guard-pretool": {
+    "enabled": true,
+    "PreToolUse": [
+      {
+        "matcher": "read_file",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python ./scripts/media_guard.py pretool",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  },
+  "media-traffic-guard-preinvoke": {
+    "enabled": true,
+    "PreInvocation": [
+      {
+        "type": "command",
+        "command": "python ./scripts/media_guard.py preinvoke",
+        "timeout": 5
+      }
+    ]
+  }
+}

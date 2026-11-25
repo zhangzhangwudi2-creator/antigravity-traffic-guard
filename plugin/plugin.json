@@ -1,0 +1,6 @@
+{
+  "name": "media-traffic-guard",
+  "displayName": "Media Traffic Guard",
+  "version": "1.0.0",
+  "description": "Prevents Antigravity agents from bloating main context with raw videos, audio, or oversized images via ffmpeg contact-sheet rewriting and context size warnings."
+}
