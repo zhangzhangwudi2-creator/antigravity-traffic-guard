@@ -1,11 +1,12 @@
 # antigravity-traffic-guard
 
+[![CI](https://github.com/zhangzhangwudi2-creator/antigravity-traffic-guard/actions/workflows/ci.yml/badge.svg)](https://github.com/zhangzhangwudi2-creator/antigravity-traffic-guard/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.8+](https://img.shields.io/badge/Python-3.8%2B-green.svg)](https://www.python.org/)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)](#安装方式)
 
 **专治 Google Antigravity 后台偷跑 / 多模态长对话代理流量暴涨的双层防火墙：**
-1. **插件层（防无状态重传雪球）**：通过 `PreToolUse` 钩子自动拦截主对话 `read_file` 读取大视频 / 音频 / 超大图，实时调用本地 `ffmpeg` 转成 `< 250 KB` 6 格关键帧拼图后再放行，并在媒体缓存每累计 `15 MB` 时自动触发 `/compact` 提醒。
+1. **插件层（防无状态重传雪球）**：通过 `PreToolUse` 钩子自动拦截主对话 `read_file` 读取大视频 / 音频 / 超大图，实时调用本地 `ffmpeg` 转成 6 格关键帧拼图（常规 `~160 KB`，硬上限 `450 KB`）后再放行，并在媒体缓存每累计 `15 MB` 时自动触发 `/compact` 提醒。
 2. **网络层（防 Clearcut 遥测循环偷跑）**：提供开箱即用的 Clash Verge Rev / Mihomo 防漏配置模板，精准嗅探并 `REJECT` 后台 `play.googleapis.com/log` 遥测上报，零误杀正常 AI 对话接口。
 
 [English Documentation](./README_EN.md)
@@ -25,7 +26,7 @@
 flowchart LR
   A["Agent 调用 read_file"] --> B{"媒体流量防火墙<br/>PreToolUse Hook"}
   B -- "代码/文本/小图" --> C["直接放行 (~80ms)"]
-  B -- "视频 >512KB / 大图 >1.5MB" --> D["ffmpeg 转 <250KB<br/>6格关键帧拼图"]
+  B -- "视频 >512KB / 大图 >1.5MB" --> D["ffmpeg 转 6 格拼图<br/>(常规 ~160KB / 上限 450KB)"]
   D -- "成功" --> E["overwrite 替换路径放行<br/>体积直降 97%+"]
   D -- "损坏/缺 ffmpeg" --> F["deny 拦截防漏原片"]
   B -- "大音频 >300KB" --> G["deny 提示改用本地脚本<br/>或按需临时关闭插件"]

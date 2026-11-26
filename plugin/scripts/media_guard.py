@@ -86,7 +86,8 @@ def handle_pretool(data):
         if not ffmpeg:
             return emit({"decision": "deny", "reason": f"[media-traffic-guard] Blocked raw video ({sz / 1048576:.2f} MB): ffmpeg not found in PATH."})
         out_jpg = preview_dir(data) / f"media_guard_vid_{tag}.jpg"
-        fps_expr = f"fps={6.0 / max(video_duration(src), 1.0):.4f}" if video_duration(src) > 1.2 else "fps=2"
+        dur = video_duration(src)
+        fps_expr = f"fps={6.0 / max(dur, 1.0):.4f}" if dur > 1.2 else "fps=2"
         ok, err = run_ffmpeg([ffmpeg, "-y", "-v", "error", "-i", str(src), "-vf", f"{fps_expr},scale=360:-2,tile=3x2",
                               "-frames:v", "1", "-update", "1", "-q:v", "6", str(out_jpg)], out_jpg, 450 * 1024)
         return emit({"decision": "allow", "overwrite": {path_key: str(out_jpg)}} if ok else

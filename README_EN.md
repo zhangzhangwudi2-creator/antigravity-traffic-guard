@@ -1,12 +1,13 @@
 # antigravity-traffic-guard
 
+[![CI](https://github.com/zhangzhangwudi2-creator/antigravity-traffic-guard/actions/workflows/ci.yml/badge.svg)](https://github.com/zhangzhangwudi2-creator/antigravity-traffic-guard/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.8+](https://img.shields.io/badge/Python-3.8%2B-green.svg)](https://www.python.org/)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)](#installation)
 
 **A two-layer bandwidth shield for Google Antigravity that stops background telemetry storms and stateless multimodal Base64 re-upload blowups.**
 
-1. **Plugin Layer (`media-traffic-guard`)**: Intercepts `read_file` via Antigravity `PreToolUse` hooks, converts oversized videos/images on the fly with `ffmpeg` into `< 250 KB` 6-frame contact sheets, blocks raw large audio from entering the main thread, and triggers `/compact` alerts every `15 MB` of accumulated media cache.
+1. **Plugin Layer (`media-traffic-guard`)**: Intercepts `read_file` via Antigravity `PreToolUse` hooks, converts oversized videos/images on the fly with `ffmpeg` into 6-frame contact sheets (`~160 KB` typical, `450 KB` hard cap), blocks raw large audio from entering the main thread, and triggers `/compact` alerts every `15 MB` of accumulated media cache.
 2. **Proxy Layer (`clash-verge-templates`)**: Hardened Clash Verge Rev / Mihomo snippets enabling pure-IP + QUIC SNI sniffing and injecting `DOMAIN,play.googleapis.com,REJECT` via global `Script.js` without breaking core LLM endpoints.
 
 [中文文档](./README.md)
@@ -24,7 +25,7 @@
 flowchart LR
   A["Agent calls read_file"] --> B{"PreToolUse Hook<br/>media_guard.py"}
   B -- "Code / Text / Small Image" --> C["Pass-through (~80ms)"]
-  B -- "Video >512KB / Image >1.5MB" --> D["ffmpeg -> <250KB<br/>3x2 Contact Sheet"]
+  B -- "Video >512KB / Image >1.5MB" --> D["ffmpeg -> 3x2 Sheet<br/>(~160KB / max 450KB)"]
   D -- "OK" --> E["overwrite Path<br/>(-97% payload)"]
   D -- "Corrupt / No ffmpeg" --> F["deny (never leak raw file)"]
   B -- "Audio >300KB" --> G["deny & advise local script<br/>or temporary toggle-off"]
